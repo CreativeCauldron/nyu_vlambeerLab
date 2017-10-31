@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 // MAZE PROC GEN LAB
 // all students: complete steps 1-6, as listed in this file
@@ -18,9 +19,95 @@ public class Pathmaker : MonoBehaviour {
 //	Declare a private integer called counter that starts at 0; 		// counter var will track how many floor tiles I've instantiated
 //	Declare a public Transform called floorPrefab, assign the prefab in inspector;
 //	Declare a public Transform called pathmakerSpherePrefab, assign the prefab in inspector; 		// you'll have to make a "pathmakerSphere" prefab later
+	private int Counter=0;
+	public Transform Floor;
+	public Transform PathmakerSphere;
 
+	public static List<Transform> FloorList=new List<Transform>();
+
+	public float RotationDeterminate;
+
+	private int CounterMax;
+	private float RotationRange;
+
+	public float FloorListCount;
+
+	public float XTotal;
+	public float ZTotal;
+
+	public GameObject Restart;
+
+	public Transform FloorType1;
+	public Transform FloorType2;
+	public Transform FloorType3;
+
+	public float FloorTypeDeterminate;
+
+	void Start(){
+		//FloorList.Clear ();
+		CounterMax = Random.Range (40, 60);
+		RotationRange = Random.Range (0.1f, .3f);
+	}
 
 	void Update () {
+		if (this.name == "Dummy") {
+			if (Restart.GetComponent<Restart> ().Restarted == true){
+				FloorList.Clear ();
+				SceneManager.LoadScene ("mainLabScene", LoadSceneMode.Single);
+			}
+			FloorListCount = FloorList.Count;
+			XTotal = 0f;
+			ZTotal = 0f;
+			foreach (Transform ThisFloor in FloorList) {
+				XTotal += ThisFloor.GetComponent<Transform> ().position.x;
+				ZTotal += ThisFloor.GetComponent<Transform> ().position.z;
+			}
+		} else {
+			if (FloorList.Count < 500) {
+				if (Counter < CounterMax) {
+					RotationDeterminate = Random.Range (0f, 1.0f);
+					if (RotationDeterminate < RotationRange) {
+						this.GetComponent<Transform> ().eulerAngles = new Vector3 (0, this.GetComponent<Transform> ().eulerAngles.y + 90f, 0f);
+					} else if (RotationDeterminate >= RotationRange && RotationDeterminate < RotationRange * 2) {
+						this.GetComponent<Transform> ().eulerAngles = new Vector3 (0, this.GetComponent<Transform> ().eulerAngles.y - 90f, 0f);
+					} else if (RotationDeterminate >= .9825 && RotationDeterminate <= 1.0f) {
+						Transform NewClone = (Transform)Instantiate (PathmakerSphere, this.GetComponent<Transform> ().position, Quaternion.Euler (0f, 0f, 0f));
+					}
+
+					foreach (Transform ThisFloor in FloorList) {
+						if (ThisFloor.GetComponent<Transform> ().position == this.GetComponent<Transform> ().position) {
+							this.transform.position += this.transform.forward * 5f;
+						}
+					}
+
+					FloorTypeDeterminate = Random.Range (0f, 1.0F);
+					if (FloorTypeDeterminate < .3) {
+						Transform FloorClone = Instantiate (Floor, this.GetComponent<Transform> ().position, Quaternion.Euler (0f, 0f, 0f));
+						FloorList.Add (FloorClone);
+					} else if (FloorTypeDeterminate >= .3 & FloorTypeDeterminate < .75) {
+						Transform FloorClone = Instantiate (FloorType2, this.GetComponent<Transform> ().position, Quaternion.Euler (0f, 0f, 0f));
+						FloorList.Add (FloorClone);
+					} else if (FloorTypeDeterminate >= .75 && FloorTypeDeterminate < .875) {
+						Transform FloorClone = Instantiate (FloorType1, this.GetComponent<Transform> ().position, Quaternion.Euler (0f, 0f, 0f));
+						FloorList.Add (FloorClone);
+					} else if (FloorTypeDeterminate >= .875 && FloorTypeDeterminate <= 1.0f) {
+						Transform FloorClone = Instantiate (FloorType3, this.GetComponent<Transform> ().position, Quaternion.Euler (0f, 0f, 0f));
+						FloorList.Add (FloorClone);
+					}
+
+					this.transform.position += this.transform.forward * 5f;
+					Counter++;
+				} else {
+					Destroy (this.gameObject);
+				}
+			} else if (FloorList.Count >= 500) {
+				Destroy (this.gameObject);
+			}
+		}
+
+	}
+		
+
 //		If counter is less than 50, then:
 //			Generate a random number from 0.0f to 1.0f;
 //			If random number is less than 0.25f, then rotate myself 90 degrees;
@@ -33,7 +120,7 @@ public class Pathmaker : MonoBehaviour {
 //			Increment counter;
 //		Else:
 //			Destroy my game object; 		// self destruct if I've made enough tiles already
-	}
+	
 
 } // end of class scope
 
